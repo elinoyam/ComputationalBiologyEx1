@@ -38,9 +38,9 @@ class Person:
         # return None
         if belief_percentage < 0.1:
             self.belief_percentage = 0.0
-        elif belief_percentage > 0.8:
+        elif belief_percentage > 0.65:
             self.belief_percentage = 1.0
-        elif 0.1 <= belief_percentage <= 0.35:
+        elif 0.1 <= belief_percentage <= 0.2:
             self.belief_percentage = 0.33
         else:
             self.belief_percentage = 0.66
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     padding = 30
 
     # create numpy array to save the percentage of people who believed the rumor in each iteration and in every for loop
-    test_results = np.ndarray((TEST_ITERATIONS, ITERATIONS), dtype=float)
+    test_results = np.zeros((TEST_ITERATIONS, ITERATIONS), dtype=float)
 
 
     for test_index in range(TEST_ITERATIONS):
