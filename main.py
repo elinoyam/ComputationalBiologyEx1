@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 L = 3
 P = 0.5
+board_is_random = True
 ITERATIONS = 50
 TEST_ITERATIONS = 10
 # Press Shift+F10 to execute it or replace it with your code.
@@ -14,13 +15,15 @@ TEST_ITERATIONS = 10
 
 
 class Person:
-    def __init__(self, row_index, column_index):
+    def __init__(self, row_index, column_index, belief_percentage=None):
         self.row_index = row_index
         self.column_index = column_index
         self.belief_percentage = None
-        # get random float between 0 and 1
-        rand = random.uniform(0, 1)
-        self.set_belief_percentage(rand)
+
+        if belief_percentage is None:
+            # get random float between 0 and 1 if it wasn't set by the user to be pre-defined board
+            belief_percentage = random.uniform(0, 1)
+        self.set_belief_percentage(belief_percentage)
         self.neighbors = None
         self.times_rumor_received = 0
         self.believed_rumor = False
@@ -34,13 +37,12 @@ class Person:
         return self.belief_percentage
 
     def set_belief_percentage(self, belief_percentage):
-        # self.belief_percentage = 0.0
-        # return None
-        if belief_percentage < 0.1:
+        # S1=~0.2, s2=~0.45, S3 =~0.25, S4=~0.1 (from paper)
+        if belief_percentage <= 0.1:
             self.belief_percentage = 0.0
-        elif belief_percentage > 0.65:
+        elif belief_percentage >= 0.8:
             self.belief_percentage = 1.0
-        elif 0.1 <= belief_percentage <= 0.2:
+        elif 0.1 < belief_percentage <= 0.35:
             self.belief_percentage = 0.33
         else:
             self.belief_percentage = 0.66
@@ -66,7 +68,6 @@ class Person:
 
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     # set np array with size 100 on 100 with type Person
     board = np.empty((100,100), dtype=Person)
@@ -82,20 +83,27 @@ if __name__ == '__main__':
     entry_P = tk.Entry(root)
     label_L = tk.Label(root, text="Enter L parameter:")
     entry_L = tk.Entry(root)
+    label_random_board = tk.Label(root, text="Enter 1 for random board, 0 for pre-defined board:")
+    entry_random_board = tk.Entry(root)
 
     # Add the label and entry widgets to the root window using pack
     label_P.pack()
     entry_P.pack()
     label_L.pack()
     entry_L.pack()
+    label_random_board.pack()
+    entry_random_board.pack()
+
 
     def process_parameter():
         global P
         global L
+        global board_is_random
 
         # Get the value of the entry widget
         P = float(entry_P.get())
         L = float(entry_L.get())
+        board_is_random = entry_random_board.get() == "1"
 
         # Process the parameter as needed
         print("The P parameter is:", P)
@@ -129,24 +137,60 @@ if __name__ == '__main__':
 
         # fill board with people with random beliefs with P probability
         number_of_people = 0
-        for i in range(100):
-            for j in range(100):
-                random_boolean = random.choices(
-                    [True, False],
-                    k=1,
-                    weights=[P,
-                             1-P],
-                )
-                if random_boolean[0]:
-                    board[i][j] = Person(i, j)
-                    number_of_people += 1
-                else:
-                    board[i][j] = None
 
-        # set neighbors
+
+        if board_is_random:
+            for i in range(100):
+                for j in range(100):
+                    random_boolean = random.choices(
+                        [True, False],
+                        k=1,
+                        weights=[P,
+                                 1-P],
+                    )
+                    if random_boolean[0]:
+                        board[i][j] = Person(i, j)
+                        number_of_people += 1
+                    else:
+                        board[i][j] = None
+        else:
+            for i in range(100):
+                for j in range(100):
+                    random_boolean = random.choices(
+                        [True, False],
+                        k=1,
+                        weights=[P,
+                                 1 - P],
+                    )
+                    if random_boolean[0]:
+                        if (i >= 10 and i <= 90) and (j >= 10 and j <= 90):
+                            # if the person is in the middle of the board, set the belief to 0.09 or 0.25 at random - be from S4 or S3 groups at random
+                            random_belief = random.choices(
+                                    [0.09, 0.25, 0.5],
+                                    k=1,
+                                    weights=[1-0.25-0.45, 0.25, 0.45],
+                                )
+                        else:
+                            # if the person is in the edge of the board, set the belief to 0.9 or 0.5 at random - - be from S1 or S2 groups at random
+                            random_belief = random.choices(
+                                [0.9, 0.25, 0.5],
+                                k=1,
+                                weights=[0.2, 1-0.2-0.45, 0.45],
+                            )
+                        board[i][j] = Person(i, j, belief_percentage=random_belief[0])
+                        number_of_people += 1
+                    else:
+                        board[i][j] = None
+
         for i in range(100):
             for j in range(100):
                 if board[i][j] is not None:
+                    # set all the people to not believe the rumor
+                    board[i][j].believed_rumor = False
+                    board[i][j].times_rumor_received = 0
+                    board[i][j].iteration_until_can_spread_rumor = 0
+
+                    # set neighbors
                     neighbors = []
                     for k in range(i-1, i+2):
                         if k >= 0 and k < 100:
@@ -156,13 +200,6 @@ if __name__ == '__main__':
                                         neighbors.append(board[k][l])
                     board[i][j].set_neighbors(neighbors)
 
-        # set all the people to not believe the rumor
-        for i in range(100):
-            for j in range(100):
-                if board[i][j] is not None:
-                    board[i][j].believed_rumor = False
-                    board[i][j].times_rumor_received = 0
-                    board[i][j].iteration_until_can_spread_rumor = 0
 
         # start with random person to spread rumor
         random_person = None
@@ -180,7 +217,17 @@ if __name__ == '__main__':
                 for j in range(100):
                     if board[i][j] is not None:
                         if board[i][j].believed_rumor and board[i][j].iteration_until_can_spread_rumor > 0:
-                            canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="yellow") # one who believed and spread the rumor in a previous iteration
+                            if board_is_random:
+                                canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="yellow") # one who believed and spread the rumor in a previous iteration
+                            else:
+                                if board[i][j].belief_percentage == 0:
+                                    canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="yellow")
+                                elif board[i][j].belief_percentage == 0.33:
+                                    canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="orange")
+                                elif board[i][j].belief_percentage == 0.66:
+                                    canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="pink")
+                                else:
+                                    canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="blue")
                         elif board[i][j].believed_rumor:
                             canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="red") # one that now starts to spread the rumor
                         else:
