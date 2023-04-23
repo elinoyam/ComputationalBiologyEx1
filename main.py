@@ -7,11 +7,13 @@ import matplotlib.pyplot as plt
 
 L = 3
 P = 0.5
-board_is_random = True
+IS_BOARD_RANDOM = True
 ITERATIONS = 50
 TEST_ITERATIONS = 10
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+RECTANGLE_SIZE = 10
+LABEL_SIZE = 20
+PADDING = 30
+ROWS = COLUMNS = 100
 
 
 class Person:
@@ -28,7 +30,6 @@ class Person:
         self.times_rumor_received = 0
         self.believed_rumor = False
         self.iteration_until_can_spread_rumor = 0
-
 
     def set_neighbors(self, neighbors):
         self.neighbors = neighbors
@@ -52,11 +53,11 @@ class Person:
 
     def spread_rumor(self):
         if self.times_rumor_received > 0 and self.iteration_until_can_spread_rumor == 0:
-            add_to_belief = 0.33 * (self.times_rumor_received-1)
+            add_to_belief = 0.33 * (self.times_rumor_received - 1)
             random_boolean = random.choices(
                 [True, False],
                 k=1,
-                weights=[min(1,self.belief_percentage + add_to_belief),
+                weights=[min(1, self.belief_percentage + add_to_belief),
                          max(1 - self.belief_percentage - add_to_belief, 0)],
             )
             self.believed_rumor = random_boolean[0]
@@ -64,21 +65,146 @@ class Person:
         self.times_rumor_received = 0
 
 
+def get_random_person_from_board():
+    random_person = None
+    while random_person is None:
+        random_person_row = random.randint(0, 99)
+        random_person_column = random.randint(0, 99)
+        random_person = board[random_person_row][random_person_column]
+
+    return random_person
 
 
+def display_board_stage():
+    canvas.delete("all")  # delete the previous stage of the board
+    for i in range(ROWS):
+        for j in range(COLUMNS):
+            if board[i][j] is not None:
+                if board[i][j].believed_rumor and board[i][j].iteration_until_can_spread_rumor > 0:
+                    if IS_BOARD_RANDOM:
+                        canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                                                fill="yellow")  # one who believed and spread the rumor in a previous iteration
+                    else:  # if the board isn't random we want to see that the S1 people are only in the margin of the borad
+                        if board[i][j].belief_percentage == 0:
+                            canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                                                    fill="yellow")  # beliver from S4
+                        elif board[i][j].belief_percentage == 0.33:
+                            canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                                                    fill="orange")  # beliver from S3
+                        elif board[i][j].belief_percentage == 0.66:
+                            canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                                                    fill="pink")  # beliver from S2
+                        else:
+                            canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                                                    fill="blue")  # beliver from S1
+                elif board[i][j].believed_rumor:
+                    canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                                            fill="red")  # one that now starts to spread the rumor
+                else:
+                    canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                                            fill="white")  # one that didn't believe the rumor
+            else:
+                canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                                        fill="black")  # empty space
+    # display changing iteration number in the top of the board (label)
+    canvas.create_text(500, 15, text="Iteration: " + str(iter), font=("Purisa", LABEL_SIZE))
+    root.update()
+
+
+def fill_board():
+    number_of_people = 0
+    if IS_BOARD_RANDOM:
+        for i in range(ROWS):
+            for j in range(COLUMNS):
+                random_boolean = random.choices(
+                    [True, False],
+                    k=1,
+                    weights=[P,
+                             1 - P],
+                )
+                if random_boolean[0]:
+                    board[i][j] = Person(i, j)
+                    number_of_people += 1
+                else:
+                    board[i][j] = None
+    else:
+        for i in range(ROWS):
+            for j in range(COLUMNS):
+                random_boolean = random.choices(
+                    [True, False],
+                    k=1,
+                    weights=[P,
+                             1 - P],
+                )
+                if random_boolean[0]:
+                    if (i >= 10 and i <= 90) and (j >= 10 and j <= 90):
+                        # if the person is in the middle of the board, set the belief to 0.09 or 0.25 at random - be from S4 or S3 groups at random
+                        random_belief = random.choices(
+                            [0.09, 0.25, 0.5],
+                            k=1,
+                            weights=[1 - 0.25 - 0.45, 0.25, 0.45],
+                        )
+                    else:
+                        # if the person is in the edge of the board, set the belief to 0.9 or 0.5 at random - - be from S1 or S2 groups at random
+                        random_belief = random.choices(
+                            [0.9, 0.25, 0.5],
+                            k=1,
+                            weights=[0.2, 1 - 0.2 - 0.45, 0.45],
+                        )
+                    board[i][j] = Person(i, j, belief_percentage=random_belief[0])
+                    number_of_people += 1
+                else:
+                    board[i][j] = None
+    return number_of_people
+
+
+def process_parameter():
+    global P
+    global L
+    global IS_BOARD_RANDOM
+
+    # Get the value of the entry widget
+    P = float(entry_P.get())
+    L = float(entry_L.get())
+    IS_BOARD_RANDOM = entry_random_board.get() == "1" or entry_random_board.get() == ""  # the defult is random board
+
+    # Process the parameter as needed
+    print("The P parameter is:", P)
+    print("The L parameter is:", L)
+    root.destroy()
+
+
+def display_board_empty_from_belivers():
+    canvas.delete("all")
+    for i in range(ROWS):
+        for j in range(COLUMNS):
+            if board[i][j] is not None:
+                canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                                        fill="white")  # one that didn't believe the rumor
+            else:
+                canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                                        fill="black")  # empty space
+    # display changing iteration number in the top of the board (label)
+    canvas.create_text(500, 15, text="Iteration: " + str(iter), font=("Purisa", LABEL_SIZE))
+    root.update()
+    # sleep for 2 seconds
+    time.sleep(2)
+    canvas.delete("all")
+    canvas.create_text(500, 500, text="Rumor vanished!", font=("Purisa", LABEL_SIZE * 5))
+    root.update()
 
 
 if __name__ == '__main__':
     # set np array with size 100 on 100 with type Person
-    board = np.empty((100,100), dtype=Person)
+    board = np.empty((ROWS, COLUMNS), dtype=Person)
 
+    # set the window attributes
     root = tk.Tk()
     root.title("Rumor Spreading")
     root.geometry("1050x1050")
     root.resizable(True, True)
 
-
-    # Create a label and an entry widget
+    # Create a label and an entry widget for all the needed parameters
     label_P = tk.Label(root, text="Enter P parameter:")
     entry_P = tk.Entry(root)
     label_L = tk.Label(root, text="Enter L parameter:")
@@ -94,23 +220,6 @@ if __name__ == '__main__':
     label_random_board.pack()
     entry_random_board.pack()
 
-
-    def process_parameter():
-        global P
-        global L
-        global board_is_random
-
-        # Get the value of the entry widget
-        P = float(entry_P.get())
-        L = float(entry_L.get())
-        board_is_random = entry_random_board.get() == "1"
-
-        # Process the parameter as needed
-        print("The P parameter is:", P)
-        print("The L parameter is:", L)
-        root.destroy()
-
-
     button = tk.Button(root, text="Process", command=process_parameter)
     button.pack()
 
@@ -122,211 +231,110 @@ if __name__ == '__main__':
     canvas = tk.Canvas(root, width=1000, height=1020)
     canvas.pack()
 
-    rectangle_size = 10
-    label_size = 20
-    padding = 30
-
     # create numpy array to save the percentage of people who believed the rumor in each iteration and in every for loop
     test_results = np.zeros((TEST_ITERATIONS, ITERATIONS), dtype=float)
-
 
     for test_index in range(TEST_ITERATIONS):
         people_who_believe_rumor = []
         people_who_believe_rumor_but_cant_spread = []
 
+        # fill board with people with random beliefs with P probability or according to the pre-defined board
+        number_of_people = fill_board()
 
-        # fill board with people with random beliefs with P probability
-        number_of_people = 0
-
-
-        if board_is_random:
-            for i in range(100):
-                for j in range(100):
-                    random_boolean = random.choices(
-                        [True, False],
-                        k=1,
-                        weights=[P,
-                                 1-P],
-                    )
-                    if random_boolean[0]:
-                        board[i][j] = Person(i, j)
-                        number_of_people += 1
-                    else:
-                        board[i][j] = None
-        else:
-            for i in range(100):
-                for j in range(100):
-                    random_boolean = random.choices(
-                        [True, False],
-                        k=1,
-                        weights=[P,
-                                 1 - P],
-                    )
-                    if random_boolean[0]:
-                        if (i >= 10 and i <= 90) and (j >= 10 and j <= 90):
-                            # if the person is in the middle of the board, set the belief to 0.09 or 0.25 at random - be from S4 or S3 groups at random
-                            random_belief = random.choices(
-                                    [0.09, 0.25, 0.5],
-                                    k=1,
-                                    weights=[1-0.25-0.45, 0.25, 0.45],
-                                )
-                        else:
-                            # if the person is in the edge of the board, set the belief to 0.9 or 0.5 at random - - be from S1 or S2 groups at random
-                            random_belief = random.choices(
-                                [0.9, 0.25, 0.5],
-                                k=1,
-                                weights=[0.2, 1-0.2-0.45, 0.45],
-                            )
-                        board[i][j] = Person(i, j, belief_percentage=random_belief[0])
-                        number_of_people += 1
-                    else:
-                        board[i][j] = None
-
-        for i in range(100):
-            for j in range(100):
+        for i in range(ROWS):
+            for j in range(COLUMNS):
                 if board[i][j] is not None:
                     # set all the people to not believe the rumor
                     board[i][j].believed_rumor = False
                     board[i][j].times_rumor_received = 0
                     board[i][j].iteration_until_can_spread_rumor = 0
 
-                    # set neighbors
+                    # set neighbors - so each person could spread the rumor to all it's neighbours easily
                     neighbors = []
-                    for k in range(i-1, i+2):
-                        if k >= 0 and k < 100:
-                            for l in range(j-1, j+2):
-                                if l >= 0 and l < 100:
+                    for k in range(i - 1, i + 2):
+                        if k >= 0 and k < ROWS:
+                            for l in range(j - 1, j + 2):
+                                if l >= 0 and l < COLUMNS:
                                     if board[k][l] is not None and (k != i or l != j):
                                         neighbors.append(board[k][l])
                     board[i][j].set_neighbors(neighbors)
 
-
         # start with random person to spread rumor
-        random_person = None
-        while random_person is None:
-            random_person_row = random.randint(0, 99)
-            random_person_column = random.randint(0, 99)
-            random_person = board[random_person_row][random_person_column]
+        random_person = get_random_person_from_board()
 
         random_person.believed_rumor = True
 
         for iter in range(ITERATIONS):
-           # display board
-            canvas.delete("all")
-            for i in range(100):
-                for j in range(100):
-                    if board[i][j] is not None:
-                        if board[i][j].believed_rumor and board[i][j].iteration_until_can_spread_rumor > 0:
-                            if board_is_random:
-                                canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="yellow") # one who believed and spread the rumor in a previous iteration
-                            else:
-                                if board[i][j].belief_percentage == 0:
-                                    canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="yellow")
-                                elif board[i][j].belief_percentage == 0.33:
-                                    canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="orange")
-                                elif board[i][j].belief_percentage == 0.66:
-                                    canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="pink")
-                                else:
-                                    canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="blue")
-                        elif board[i][j].believed_rumor:
-                            canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="red") # one that now starts to spread the rumor
-                        else:
-                            canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="white") # one that didn't believe the rumor
-                    else:
-                        canvas.create_rectangle(i*10, j*10+ padding, i*10+10, j*10+10+ padding, fill="black") # empty space
-            # display changing iteration number in the top of the board (label)
-            canvas.create_text(500, 15, text="Iteration: " + str(iter), font=("Purisa", label_size))
-            root.update()
+            # display board
+            display_board_stage()
 
-            # decrease iteration until can spread rumor
-            for i in range(100):
-                for j in range(100):
+            people_who_believe_rumor = []
+            people_who_believe_rumor_but_cant_spread = []
+            for i in range(ROWS):
+                for j in range(COLUMNS):
                     if board[i][j] is not None:
+                        # decrease iteration until can spread rumor
                         if board[i][j].iteration_until_can_spread_rumor > 0:
                             board[i][j].iteration_until_can_spread_rumor -= 1
                             if board[i][j].iteration_until_can_spread_rumor == 0:
                                 board[i][j].believed_rumor = False
+                        # find all the people who believe the rumor
+                        if board[i][j] is not None and \
+                                board[i][j].believed_rumor and board[i][j].iteration_until_can_spread_rumor == 0:
+                            people_who_believe_rumor.append(board[i][j])
+                        elif board[i][j] is not None and \
+                                board[i][j].believed_rumor and board[i][j].iteration_until_can_spread_rumor > 0:
+                            people_who_believe_rumor_but_cant_spread.append(board[i][j])
 
-            # find all the people who believe the rumor
-            people_who_believe_rumor = []
-            people_who_believe_rumor_but_cant_spread = []
-            for i in range(100):
-                for j in range(100):
-                    if board[i][j] is not None and board[i][j].believed_rumor and board[i][j].iteration_until_can_spread_rumor == 0:
-                        people_who_believe_rumor.append(board[i][j])
-                    elif board[i][j] is not None and board[i][j].believed_rumor and board[i][j].iteration_until_can_spread_rumor > 0:
-                        people_who_believe_rumor_but_cant_spread.append(board[i][j])
+            # for testibg purposes:
+            # print("Iteration: " + str(iter) + " P: " + str(P) + " L: " + str(L) + " people who believe rumor: " + str(len(people_who_believe_rumor)) + " people who believe rumor but can't spread: " + str(len(people_who_believe_rumor_but_cant_spread)))
 
-            print("Iteration: " + str(iter) + " P: " + str(P) + " L: " + str(L) + " people who believe rumor: " + str(len(people_who_believe_rumor)) + " people who believe rumor but can't spread: " + str(len(people_who_believe_rumor_but_cant_spread)))
+            # if none of the people in the board belives the rumor then the rumor is vanished
+            # we can stop this iteration of spreading the rumor
             if len(people_who_believe_rumor) == 0 and len(people_who_believe_rumor_but_cant_spread) == 0:
-                canvas.delete("all")
-                for i in range(100):
-                    for j in range(100):
-                        if board[i][j] is not None:
-                            canvas.create_rectangle(i * 10, j * 10 + padding, i * 10 + 10, j * 10 + 10 + padding,
-                                                        fill="white")  # one that didn't believe the rumor
-                        else:
-                            canvas.create_rectangle(i * 10, j * 10 + padding, i * 10 + 10, j * 10 + 10 + padding,
-                                                    fill="black")  # empty space
-                # display changing iteration number in the top of the board (label)
-                canvas.create_text(500, 15, text="Iteration: " + str(iter), font=("Purisa", label_size))
-                root.update()
-                # sleep for 2 seconds
-                time.sleep(2)
-                canvas.delete("all")
-                canvas.create_text(500, 500, text="Rumor vanished!", font=("Purisa", label_size*5))
-                root.update()
+                display_board_empty_from_belivers()
                 break
 
-            # spread rumor to neighbors
+            # spread rumor to neighbors - increase the number of rumored recived in this stage
             for person in people_who_believe_rumor:
                 for neighbor in person.neighbors:
                     neighbor.receive_rumor()
 
                 person.iteration_until_can_spread_rumor = L
-                # person.believed_rumor = False
 
-            # check for each person if he needs to spread rumor
-            for i in range(100):
-                for j in range(100):
-                    if board[i][j] is not None:
-                        board[i][j].spread_rumor()
+            # check for each person if he needs to spread rumor - by he's belief level and probability
+            for i in range(ROWS):
+                for j in range(COLUMNS):
+                    for j in range(COLUMNS):
+                        if board[i][j] is not None:
+                            board[i][j].spread_rumor()
 
             # insert to test result the percentage of people who believe the rumor in the test_index row and the current iteration
-            test_results[test_index][iter] = ((len(people_who_believe_rumor) + len(people_who_believe_rumor_but_cant_spread)) / number_of_people) * 100
+            test_results[test_index][iter] = ((len(people_who_believe_rumor) + len(
+                people_who_believe_rumor_but_cant_spread)) / number_of_people) * 100
 
+    # display in the window the percentage of people who believed the rumor from all the people in the board
+    canvas.delete("all")
+    canvas.create_text(500, 200, text="P = " + str(P) + ", L = " + str(L), font=("Purisa", LABEL_SIZE * 2))
+    belief_percentage = (
+                (len(people_who_believe_rumor) + len(people_who_believe_rumor_but_cant_spread)) / number_of_people)
+    belief_percentage = belief_percentage * 100
+    canvas.create_text(500, 500, text="Percentage of people who believes \nthe rumor in the last iteration:\n" + str(
+        belief_percentage) + "%",
+                       font=("Purisa", int(LABEL_SIZE * 1.5)), justify="center")
+    root.update()
+    # test_results.append({ "P": P, "L": L, "belief_percentage": belief_percentage})
 
-        # display in the window the percentage of people who believed the rumor from all the people in the board
-        canvas.delete("all")
-        canvas.create_text(500, 200, text="P = " + str(P) + ", L = " + str(L), font=("Purisa", label_size*2))
-        belief_percentage = ((len(people_who_believe_rumor) + len(people_who_believe_rumor_but_cant_spread)) / number_of_people)
-        belief_percentage = belief_percentage * 100
-        canvas.create_text(500, 500, text="Percentage of people who believes \nthe rumor in the last iteration:\n" + str(belief_percentage) + "%",
-                           font=("Purisa", int(label_size*1.5)), justify="center")
-        root.update()
-        # test_results.append({ "P": P, "L": L, "belief_percentage": belief_percentage})
+    # print("P = " + str(P) + ", L = " + str(L) + ", percentage of people who believed the rumor: " + str(len(people_who_believe_rumor) / (10000 - len(people_who_believe_rumor_but_cant_spread)) * 100) + "%")
+    root.after(2000)
 
-        # print("P = " + str(P) + ", L = " + str(L) + ", percentage of people who believed the rumor: " + str(len(people_who_believe_rumor) / (10000 - len(people_who_believe_rumor_but_cant_spread)) * 100) + "%")
-        root.after(3000)
+# for tests purposes: print(test_results)
 
-
-
-    # print(test_results)
-    # display graph of believed percentage vs iteration number for all test_index together in the same graph
-    for test_index in range(len(test_results)):
-        plt.plot(test_results[test_index])
-    plt.ylabel('Percentage of people who believed the rumor')
-    plt.xlabel('Iteration number')
-    plt.show()
-
-
-
-
-    # plt.plot([x["iteration"] for x in test_results], [x["belief_percentage"] for x in test_results])
-    # plt.show()
-
-
-
-    root.after(5000)
-    root.destroy()
-
+# display graph of believed percentage vs iteration number for all test_index together in the same graph
+for test_index in range(len(test_results)):
+    plt.plot(test_results[test_index])
+plt.ylabel('Percentage of people who believed the rumor')
+plt.xlabel('Iteration number')
+plt.show()
+root.after(2000)
+root.destroy()  # close the window
