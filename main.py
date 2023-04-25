@@ -204,6 +204,7 @@ if __name__ == '__main__':
     root.geometry("1050x1050")
     root.resizable(True, True)
 
+
     # Create a label and an entry widget for all the needed parameters
     label_P = tk.Label(root, text="Enter P parameter:")
     entry_P = tk.Entry(root)
@@ -229,7 +230,19 @@ if __name__ == '__main__':
     root.geometry("1050x1050")
     root.resizable(True, True)
     canvas = tk.Canvas(root, width=1000, height=1020)
-    canvas.pack()
+    # make the canvas scrollable
+    canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    scrollbar_vertical = tk.Scrollbar(root, orient=tk.VERTICAL, command=canvas.yview)
+    scrollbar_vertical.pack(side=tk.RIGHT, fill=tk.Y)
+    canvas.configure(yscrollcommand=scrollbar_vertical.set)
+    canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+
+    frame = tk.Frame(canvas)
+    canvas.create_window((0, 0), window=frame, anchor="nw")
+    frame = tk.Frame(canvas)
+
+    #canvas.pack()
 
     # create numpy array to save the percentage of people who believed the rumor in each iteration and in every for loop
     test_results = np.zeros((TEST_ITERATIONS, ITERATIONS), dtype=float)
