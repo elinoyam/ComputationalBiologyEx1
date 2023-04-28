@@ -10,9 +10,10 @@ P = 0.5
 IS_BOARD_RANDOM = True
 ITERATIONS = 50
 TEST_ITERATIONS = 10
-RECTANGLE_SIZE = 10
+RECTANGLE_SIZE = 6
 LABEL_SIZE = 20
-PADDING = 30
+PADDING_Y = 30
+PADDING_X = 100
 ROWS = COLUMNS = 100
 
 
@@ -82,32 +83,32 @@ def display_board_stage():
             if board[i][j] is not None:
                 if board[i][j].believed_rumor and board[i][j].iteration_until_can_spread_rumor > 0:
                     if IS_BOARD_RANDOM:
-                        canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                        canvas.create_rectangle(i * RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + PADDING_Y, i * RECTANGLE_SIZE + RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                                 fill="yellow")  # one who believed and spread the rumor in a previous iteration
                     else:  # if the board isn't random we want to see that the S1 people are only in the margin of the borad
                         if board[i][j].belief_percentage == 0:
-                            canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                            canvas.create_rectangle(i * RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + PADDING_Y, i * RECTANGLE_SIZE + RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                                     fill="yellow")  # beliver from S4
                         elif board[i][j].belief_percentage == 0.33:
-                            canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                            canvas.create_rectangle(i * RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + PADDING_Y, i * RECTANGLE_SIZE + RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                                     fill="orange")  # beliver from S3
                         elif board[i][j].belief_percentage == 0.66:
-                            canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                            canvas.create_rectangle(i * RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + PADDING_Y, i * RECTANGLE_SIZE + RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                                     fill="pink")  # beliver from S2
                         else:
-                            canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                            canvas.create_rectangle(i * RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + PADDING_Y, i * RECTANGLE_SIZE + RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                                     fill="blue")  # beliver from S1
                 elif board[i][j].believed_rumor:
-                    canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                    canvas.create_rectangle(i * RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + PADDING_Y, i * RECTANGLE_SIZE + RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                             fill="red")  # one that now starts to spread the rumor
                 else:
-                    canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                    canvas.create_rectangle(i * RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + PADDING_Y, i * RECTANGLE_SIZE + RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                             fill="white")  # one that didn't believe the rumor
             else:
-                canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                canvas.create_rectangle(i * RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + PADDING_Y, i * RECTANGLE_SIZE + RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                         fill="black")  # empty space
     # display changing iteration number in the top of the board (label)
-    canvas.create_text(500, 15, text="Iteration: " + str(iter), font=("Purisa", LABEL_SIZE))
+    canvas.create_text(400, 15, text="Iteration: " + str(iter), font=("Purisa", LABEL_SIZE))
     root.update()
 
 
@@ -179,20 +180,50 @@ def display_board_empty_from_belivers():
     for i in range(ROWS):
         for j in range(COLUMNS):
             if board[i][j] is not None:
-                canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                canvas.create_rectangle(i * RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + PADDING_Y, i * RECTANGLE_SIZE + RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                         fill="white")  # one that didn't believe the rumor
             else:
-                canvas.create_rectangle(i * 10, j * 10 + PADDING, i * 10 + 10, j * 10 + 10 + PADDING,
+                canvas.create_rectangle(i * RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + PADDING_Y, i * RECTANGLE_SIZE + RECTANGLE_SIZE+PADDING_X, j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                         fill="black")  # empty space
     # display changing iteration number in the top of the board (label)
-    canvas.create_text(500, 15, text="Iteration: " + str(iter), font=("Purisa", LABEL_SIZE))
+    canvas.create_text(400, 15, text="Iteration: " + str(iter), font=("Purisa", LABEL_SIZE))
     root.update()
     # sleep for 2 seconds
     time.sleep(2)
     canvas.delete("all")
-    canvas.create_text(500, 500, text="Rumor vanished!", font=("Purisa", LABEL_SIZE * 5))
+    canvas.create_text(400, 300, text="Rumor vanished!", font=("Purisa", LABEL_SIZE*2))
     root.update()
 
+def on_entryP_click(event):
+    """Remove the placeholder when the entry widget is clicked."""
+    if entry_P.get() == default_value_p:
+        entry_P.delete(0, tk.END)
+
+def on_entryP_leave(event):
+    """Insert the placeholder if the user didn't enter anything."""
+    if not entry_P.get():
+        entry_P.insert(0, default_value_p)
+
+def on_entryL_click(event):
+    """Remove the placeholder when the entry widget is clicked."""
+    if entry_L.get() == default_value_l:
+        entry_L.delete(0, tk.END)
+
+def on_entryL_leave(event):
+    """Insert the placeholder if the user didn't enter anything."""
+    if not entry_L.get():
+        entry_L.insert(0, default_value_l)
+
+
+def on_entryR_click(event):
+    """Remove the placeholder when the entry widget is clicked."""
+    if entry_random_board.get() == default_value_R:
+        entry_random_board.delete(0, tk.END)
+
+def on_entryR_leave(event):
+    """Insert the placeholder if the user didn't enter anything."""
+    if not entry_random_board.get():
+        entry_random_board.insert(0, default_value_R)
 
 if __name__ == '__main__':
     # set np array with size 100 on 100 with type Person
@@ -201,35 +232,54 @@ if __name__ == '__main__':
     # set the window attributes
     root = tk.Tk()
     root.title("Rumor Spreading")
-    root.geometry("1050x1050")
+    root.geometry("500x500")
     root.resizable(True, True)
 
+    blank_label = tk.Label(root, pady=20)
 
     # Create a label and an entry widget for all the needed parameters
-    label_P = tk.Label(root, text="Enter P parameter:")
+    label_P = tk.Label(root, text="Enter P parameter:", pady=5)
     entry_P = tk.Entry(root)
-    label_L = tk.Label(root, text="Enter L parameter:")
-    entry_L = tk.Entry(root)
-    label_random_board = tk.Label(root, text="Enter 1 for random board, 0 for pre-defined board:")
-    entry_random_board = tk.Entry(root)
+    #default value as placeholder
+    default_value_p = "0.5"
+    entry_P.insert(0, default_value_p)
+    entry_P.bind('<FocusIn>', on_entryP_click)
+    entry_P.bind('<FocusOut>', on_entryP_leave)
 
+
+    label_L = tk.Label(root, text="Enter L parameter:", pady=5)
+    entry_L = tk.Entry(root)
+    default_value_l = "3"
+    entry_L.insert(0, default_value_l)
+    entry_L.bind('<FocusIn>', on_entryL_click)
+    entry_L.bind('<FocusOut>', on_entryL_leave)
+
+    label_random_board = tk.Label(root, text="Enter 1 for random board, 0 for pre-defined board:", pady=5)
+    entry_random_board = tk.Entry(root)
+    default_value_R = "1"
+    entry_random_board.insert(0, default_value_R)
+    entry_random_board.bind('<FocusIn>', on_entryR_click)
+    entry_random_board.bind('<FocusOut>', on_entryR_leave)
+
+    blank_label1 = tk.Label(root, pady=5)
     # Add the label and entry widgets to the root window using pack
+    blank_label.pack()
     label_P.pack()
     entry_P.pack()
     label_L.pack()
     entry_L.pack()
     label_random_board.pack()
     entry_random_board.pack()
-
+    blank_label1.pack()
     button = tk.Button(root, text="Process", command=process_parameter)
     button.pack()
 
     root.mainloop()
     root = tk.Tk()
     root.title("Rumor Spreading")
-    root.geometry("1050x1050")
+    root.geometry("800x800")
     root.resizable(True, True)
-    canvas = tk.Canvas(root, width=1000, height=1020)
+    canvas = tk.Canvas(root, width=800, height=800)
     # make the canvas scrollable
     canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
     scrollbar_vertical = tk.Scrollbar(root, orient=tk.VERTICAL, command=canvas.yview)
