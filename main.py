@@ -378,13 +378,13 @@ if __name__ == '__main__':
 
     # display in the window the percentage of people who believed the rumor from all the people in the board
     canvas.delete("all")
-    canvas.create_text(500, 200, text="P = " + str(P) + ", L = " + str(L), font=("Purisa", LABEL_SIZE * 2))
+    canvas.create_text(350, 200, text="P = " + str(P) + ", L = " + str(L), font=("Purisa", LABEL_SIZE * 2))
     belief_percentage = (
                 (len(people_who_believe_rumor) + len(people_who_believe_rumor_but_cant_spread)) / number_of_people)
     belief_percentage = belief_percentage * 100
-    canvas.create_text(500, 500, text="Percentage of people who believes \nthe rumor in the last iteration:\n" + str(
+    canvas.create_text(350, 400, text="Percentage of people who believes \nthe rumor in the last iteration:\n" + str(
         belief_percentage) + "%",
-                       font=("Purisa", int(LABEL_SIZE * 1.5)), justify="center")
+                       font=("Purisa", int(LABEL_SIZE)), justify="center")
     root.update()
     # test_results.append({ "P": P, "L": L, "belief_percentage": belief_percentage})
 
