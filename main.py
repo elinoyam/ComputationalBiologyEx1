@@ -125,7 +125,8 @@ def display_board_stage():
                                         j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                         fill="black")  # empty space
     # display changing iteration number in the top of the board (label)
-    canvas.create_text(400, 15, text="Generation: " + str(iter), font=("Purisa", LABEL_SIZE))
+    canvas.create_text(200, 15, text="Iteration: " + str(test_index), font=("Purisa", LABEL_SIZE))
+    canvas.create_text(400, 15, text=" Generation: " + str(iter), font=("Purisa", LABEL_SIZE))
     root.update()
 
 
