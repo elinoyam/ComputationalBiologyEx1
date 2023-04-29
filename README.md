@@ -31,7 +31,7 @@ menu:
 
 * iterations is the amount of runs we want to have
 
-*If you want to have GUI of the matrix and see the rumor spreads - Enter 1. else 0. (not seeing the GUI will make the process faster)
+* If you want to have GUI of the matrix and see the rumor spreads - Enter 1. else 0. (not seeing the GUI will make the process faster)
 
 At the end will generate a graph. X axis is generation number, Y axis is the percentage of people believed the rumor at every generation.
 All iterations are shown on the same graph.
