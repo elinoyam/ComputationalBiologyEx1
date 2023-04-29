@@ -125,7 +125,7 @@ def display_board_stage():
                                         j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                         fill="black")  # empty space
     # display changing iteration number in the top of the board (label)
-    canvas.create_text(200, 15, text="Iteration: " + str(test_index), font=("Purisa", LABEL_SIZE))
+    canvas.create_text(164, 15, text="Iteration: " + str(test_index), font=("Purisa", LABEL_SIZE))
     canvas.create_text(400, 15, text=" Generation: " + str(iter), font=("Purisa", LABEL_SIZE))
     root.update()
 
@@ -214,6 +214,7 @@ def display_board_empty_from_belivers():
                                         j * RECTANGLE_SIZE + RECTANGLE_SIZE + PADDING_Y,
                                         fill="black")  # empty space
     # display changing iteration number in the top of the board (label)
+    canvas.create_text(164, 15, text="Iteration: " + str(test_index), font=("Purisa", LABEL_SIZE))
     canvas.create_text(400, 15, text="Generation: " + str(iter), font=("Purisa", LABEL_SIZE))
     root.update()
     # sleep for 2 seconds
@@ -223,10 +224,15 @@ def display_board_empty_from_belivers():
     root.update()
 
 
+P_flag = True
+
+
 def on_entryP_click(event):
+    global P_flag
     """Remove the placeholder when the entry widget is clicked."""
-    if entry_P.get() == default_value_p:
+    if entry_P.get() == default_value_p and P_flag:
         entry_P.delete(0, tk.END)
+        P_flag = False
 
 
 def on_entryP_leave(event):
@@ -235,10 +241,15 @@ def on_entryP_leave(event):
         entry_P.insert(0, default_value_p)
 
 
+L_flag = True
+
+
 def on_entryL_click(event):
+    global L_flag
     """Remove the placeholder when the entry widget is clicked."""
-    if entry_L.get() == default_value_l:
+    if entry_L.get() == default_value_l and L_flag:
         entry_L.delete(0, tk.END)
+        L_flag = False
 
 
 def on_entryL_leave(event):
@@ -247,10 +258,15 @@ def on_entryL_leave(event):
         entry_L.insert(0, default_value_l)
 
 
+R_flag = True
+
+
 def on_entryR_click(event):
+    global R_flag
     """Remove the placeholder when the entry widget is clicked."""
-    if entry_random_board.get() == default_value_R:
+    if entry_random_board.get() == default_value_R and R_flag:
         entry_random_board.delete(0, tk.END)
+        R_flag = False
 
 
 def on_entryR_leave(event):
@@ -258,11 +274,13 @@ def on_entryR_leave(event):
     if not entry_random_board.get():
         entry_random_board.insert(0, default_value_R)
 
-
+ITERATIONS_flag = True
 def on_entry_ITERATIONS_click(event):
+    global ITERATIONS_flag
     """Remove the placeholder when the entry widget is clicked."""
-    if entry_ITERATIONS.get() == default_value_ITERATIONS:
+    if entry_ITERATIONS.get() == default_value_ITERATIONS and ITERATIONS_flag:
         entry_ITERATIONS.delete(0, tk.END)
+        ITERATIONS_flag = False
 
 
 def on_entry_ITERATIONS_leave(event):
@@ -270,23 +288,26 @@ def on_entry_ITERATIONS_leave(event):
     if not entry_ITERATIONS.get():
         entry_ITERATIONS.insert(0, default_value_ITERATIONS)
 
-
+TEST_ITERATIONS_FLAG = True
 def on_entry_TEST_ITERATIONS_click(event):
+    global TEST_ITERATIONS_FLAG
     """Remove the placeholder when the entry widget is clicked."""
-    if entry_TEST_ITERATIONS.get() == default_value_TEST_ITERATIONS:
+    if entry_TEST_ITERATIONS.get() == default_value_TEST_ITERATIONS and TEST_ITERATIONS_FLAG:
         entry_TEST_ITERATIONS.delete(0, tk.END)
-
+        TEST_ITERATIONS_FLAG = False
 
 def on_entry_TEST_ITERATIONS_leave(event):
     """Insert the placeholder if the user didn't enter anything."""
     if not entry_TEST_ITERATIONS.get():
         entry_TEST_ITERATIONS.insert(0, default_value_TEST_ITERATIONS)
 
-
+GUI_flag = True
 def on_entry_GUI_click(event):
+    global GUI_flag
     """Remove the placeholder when the entry widget is clicked."""
-    entry_GUI.delete(0, tk.END)
-
+    if GUI_flag:
+        entry_GUI.delete(0, tk.END)
+        GUI_flag = False
 
 def on_entry_GUI_leave(event):
     """Insert the placeholder if the user didn't enter anything."""
