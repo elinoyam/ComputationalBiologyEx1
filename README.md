@@ -27,7 +27,7 @@ menu:
 
     Blue - represents person from S1
 
-* generations is the amount of generations to have in every single run.
+* generations is the amount of generations to have in every single run.(be advised that counts begin from 0 and also considered as a generation. ie: Entering 6 will run from 0 to 5 includes.
 
 * iterations is the amount of runs we want to have
 
