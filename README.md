@@ -1,7 +1,7 @@
 # ComputationalBiologyEx1
 
 menu:
-* Parameter P - The percentage of the table filled with people.
+* Parameter P - The percentage of the table filled with people. number between 0 to 1.0
 0 means no people at all, 1 means all board is filled with people.
 
 * Parameter L- for how many generations a person can't receive and spread the rumor again
