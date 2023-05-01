@@ -4,7 +4,7 @@ Tkinter,numpy,matplotlib.
 
 installation can be performed via cmd using the following commands:
 
-pip install tkinter
+pip install tk
 
 pip install matplotlib
 
