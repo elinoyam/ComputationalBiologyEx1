@@ -3,8 +3,11 @@ For running the code you need to have the following libraries:
 Tkinter,numpy,matplotlib.
 
 installation can be performed via cmd using the following commands:
+
 pip install tkinter
+
 pip install matplotlib
+
 pip install numpy
 
 Menu:
